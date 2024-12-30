@@ -9,6 +9,8 @@ app = Flask(__name__, static_folder='static')
 parser = argparse.ArgumentParser()
 parser.add_argument('--base-dir', type=str, required=True,
                     help='Base directory to navigate from')
+parser.add_argument('--port', type=str, default=5000,
+                    help='Base directory to navigate from')
 args = parser.parse_args()
 
 
@@ -79,4 +81,4 @@ def download_directory_stream():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=args.port)

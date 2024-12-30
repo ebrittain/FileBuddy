@@ -65,7 +65,8 @@ FileBuddy is a user-friendly and secure application that allows users to browse,
 4. Double-click a directory to download its contents as a .zip file.
 
 ### Customization
-* Directory to Serve: Specify the directory using the --base-dir argument when starting the server.
+* **Directory to Serve:** Specify the directory using the ```--base-dir``` argument when starting the server.
+* **Port:** Change the server's port using the ```--port``` argument.
 
 ### License
 This project is licensed under the MIT License. See the LICENSE file for more details.
