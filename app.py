@@ -12,9 +12,6 @@ parser.add_argument('--base-dir', type=str, required=True,
 args = parser.parse_args()
 
 
-PASSWORD = "12345"  # Replace with your desired password
-
-
 @app.route("/")
 def home():
     return send_from_directory("static", "index.html")
