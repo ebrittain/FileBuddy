@@ -14,6 +14,11 @@ parser.add_argument('--port', type=str, default=5000,
 args = parser.parse_args()
 
 
+def is_valid_path(path):
+    """Validate that the path does not contain invalid sequences like '..'."""
+    return ".." not in path and not os.path.isabs(path)
+
+
 @app.route("/")
 def home():
     return send_from_directory("static", "index.html")
@@ -23,6 +28,9 @@ def home():
 def get_directory_tree():
     """Get the directory tree"""
     path = request.args.get('path', '')
+    if not is_valid_path(path):
+        return jsonify({"error": "Invalid path"}), 400
+
     full_path = os.path.join(args.base_dir, path) if path else args.base_dir
 
     def get_tree(path):
@@ -51,6 +59,9 @@ def get_directory_tree():
 def download_file(filename):
     """Download a specific file"""
     directory = request.args.get('directory', '')
+    if not is_valid_path(directory):
+        return jsonify({"error": "Invalid path"}), 400
+
     dir_path = os.path.join(args.base_dir, directory) if directory else args.base_dir
     return send_from_directory(dir_path, filename, as_attachment=True)
 
@@ -59,6 +70,9 @@ def download_file(filename):
 def download_directory_stream():
     """Stream the entire directory as a .zip file."""
     path = request.args.get("path", "")
+    if not is_valid_path(path):
+        return jsonify({"error": "Invalid path"}), 400
+
     full_path = os.path.join(args.base_dir, path)
 
     if not os.path.exists(full_path) or not os.path.isdir(full_path):
@@ -80,5 +94,38 @@ def download_directory_stream():
     })
 
 
+@app.route("/search", methods=["GET"])
+def search_files():
+    """Recursively search for files and directories matching the query."""
+    query = request.args.get("query", "").lower()
+    path = request.args.get("path", "")
+    if not is_valid_path(path):
+        return jsonify({"error": "Invalid path"}), 400
+
+    full_path = os.path.join(args.base_dir, path)
+
+    if not os.path.exists(full_path):
+        return jsonify({"error": "Path does not exist"}), 404
+
+    results = []
+    for root, dirs, files in os.walk(full_path):
+        dirs[:] = [d for d in dirs if not d.startswith(".")]
+
+        for name in dirs + files:
+            if name.startswith('.'):
+                continue
+            if query in name.lower():
+                relative_root = os.path.relpath(root, full_path).replace("\\", "/")
+                relative_path = f"{relative_root}/{name}" if relative_root != "." else name
+                item_type = "directory" if os.path.isdir(os.path.join(root, name)) else "file"
+                results.append({
+                    "name": name,
+                    "type": item_type,
+                    "relative_path": relative_path
+                })
+
+    return jsonify(results)
+
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=args.port)
+    app.run(host='0.0.0.0', port=args.port, debug=True)

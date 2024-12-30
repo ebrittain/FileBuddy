@@ -76,7 +76,7 @@ function displayTree(tree, container) {
             icon.textContent = '📄';
             li.appendChild(icon);
             li.appendChild(document.createTextNode(item.name));
-            li.onclick = () => downloadFile(li, item.name);
+            li.onclick = () => downloadFile(item.name, li);
         }
 
         ul.appendChild(li);
@@ -85,22 +85,24 @@ function displayTree(tree, container) {
 }
 
 // Function to download a file with animation
-function downloadFile(li, filename) {
+function downloadFile(filename, li = null) {
     const link = document.createElement('a');
     link.href = `/download/${filename}?directory=${currentPath}`;
     link.download = filename;
     link.click();
 
     // Show animation
-    const animation = document.createElement('span');
-    animation.textContent = '✔️ Downloaded';
-    animation.classList.add('download-animation');
-    li.appendChild(animation);
+    if (li != null) {
+        const animation = document.createElement('span');
+        animation.textContent = '✔️ Downloaded';
+        animation.classList.add('download-animation');
+        li.appendChild(animation);
 
-    // Remove animation after it's done
-    setTimeout(() => {
-        li.removeChild(animation);
-    }, 2500);
+        // Remove animation after it's done
+        setTimeout(() => {
+            li.removeChild(animation);
+        }, 2500);
+    }
 }
 
 function downloadDirectory(li, path) {
@@ -120,6 +122,62 @@ function downloadDirectory(li, path) {
         li.removeChild(animation);
     }, 2500);
 }
+
+/**
+ * Performs a search and displays recommendations based on user input.
+ * @param {string} query - The search query.
+ */
+async function searchFiles(query) {
+    if (!query.trim()) {
+        return; // Ignore empty queries
+    }
+
+    try {
+        const response = await fetch(`/search?query=${encodeURIComponent(query)}&path=${encodeURIComponent(currentPath)}`);
+        if (!response.ok) throw new Error(`Search failed: ${response.statusText}`);
+
+        const results = await response.json();
+        displaySearchResults(results);
+    } catch (error) {
+        console.error("Error performing search:", error);
+    }
+}
+
+/**
+ * Displays search results as recommendations.
+ * @param {Array} results - List of matching files and directories.
+ */
+function displaySearchResults(results) {
+    const searchResultsContainer = document.getElementById("search-results");
+    const searchBar = document.getElementById("search-bar");
+    searchResultsContainer.innerHTML = ''; // Clear previous results
+
+    results.forEach((item) => {
+        const resultItem = document.createElement('div');
+        resultItem.classList.add('search-result');
+        resultItem.textContent = `${item.type === 'directory' ? '📂' : '📄'} ${item.relative_path}`;
+        resultItem.addEventListener('click', () => {
+            if (item.type === 'directory') {
+                currentPath = item.relative_path
+                fetchDirectoryTree();
+            } else {
+                currentPath = item.relative_path.substring(0, item.relative_path.lastIndexOf('/')) || '';
+                downloadFile(item.name);
+            }
+            searchResultsContainer.innerHTML = '';
+            searchBar.value = '';
+        });
+
+        searchResultsContainer.appendChild(resultItem);
+    });
+}
+
+// Add search bar input handler
+document.getElementById("search-bar").addEventListener("input", (event) => {
+    const query = event.target.value;
+    searchFiles(query);
+});
+
 
 // Initialize the directory tree when the page loads
 window.onload = function() {
