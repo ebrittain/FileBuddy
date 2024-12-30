@@ -20,14 +20,6 @@ def home():
     return send_from_directory("static", "index.html")
 
 
-@app.route("/validate-password", methods=["POST"])
-def validate_password():
-    data = request.json
-    if data.get("password") == PASSWORD:
-        return jsonify({"success": True}), 200
-    return jsonify({"success": False, "error": "Invalid password"}), 401
-
-
 @app.route("/files", methods=["GET"])
 def get_directory_tree():
     """Get the directory tree"""
@@ -90,4 +82,4 @@ def download_directory_stream():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
