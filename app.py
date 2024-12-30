@@ -128,4 +128,6 @@ def search_files():
 
 
 if __name__ == "__main__":
+    if not os.path.exists(args.base_dir):
+        raise FileExistsError(f'Unable to locate base directory: {args.base_dir}')
     app.run(host='0.0.0.0', port=args.port, debug=True)
