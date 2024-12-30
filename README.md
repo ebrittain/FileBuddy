@@ -7,6 +7,7 @@ FileBuddy is a user-friendly and secure application that allows users to browse,
 ## Features
 
 - **Directory Navigation**: Navigate through folders in a visually intuitive tree view.
+- **Search Functionality**: Quickly find files and directories with a dynamic search bar that provides recommendations and supports recursive searching.
 - **File Downloads**: Download individual files with a single click.
 - **Directory Downloads**: Download entire directories as `.zip` files by double-clicking.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
