@@ -35,7 +35,7 @@ FileBuddy is a user-friendly and secure application that allows users to browse,
     ```
 2. Start the Flask server:
     ```bash
-    python server.py --base-dir /path/to/files --password yourpassword
+    python app.py --base-dir /path/to/files
     ```
 3. Access the application in your browser:
     ```plaintext
