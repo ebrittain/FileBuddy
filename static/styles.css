@@ -16,18 +16,6 @@ h1 {
     text-decoration-color: #f0f4f8
 }
 
-#file-tree {
-    max-width: 800px;
-    margin: 20px auto;
-    background: linear-gradient(120deg, #ffffff, #f0f4f8);
-    border: 2px solid #007bff;
-    border-radius: 16px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    opacity: 1;
-    transition: opacity 0.5s ease-in-out;
-}
-
 ul {
     list-style-type: none;
     padding-left: 20px;
@@ -151,4 +139,99 @@ li:hover {
 .search-result:hover {
     background-color: #f0f4f8;
     color: #007bff;
+}
+
+/* File tree styles */
+#file-tree {
+    position: relative;
+    margin: 0 auto;
+    max-width: 800px;
+    width: 100%;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Drop message styles */
+#drop-area-message {
+    position: absolute; /* Positioned relative to #file-tree */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center horizontally and vertically */
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: rgba(206, 206, 206, 0.6);
+    color: #fff;
+    text-align: center;
+    pointer-events: none; /* Prevent interaction blocking */
+    z-index: 10; /* Ensure it overlays other content */
+    display: none; /* Initially hidden */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+
+/* Highlight file tree when dragging over */
+#file-tree.drag-over {
+    border-color: #007bff;
+    background-color: rgba(241, 241, 241, 0.8);
+}
+
+/* Apply blur to the entire page when dragging */
+.dragging {
+    backdrop-filter: blur(14px); /* Apply a subtle blur effect */
+    transition: backdrop-filter 0.3s ease; /* Smooth transition */
+}
+
+/* Toast container */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Start slightly lower */
+    padding: 15px 30px; /* Increased padding for a larger size */
+    font-size: 1.2em; /* Larger font for better visibility */
+    color: #fff;
+    background: linear-gradient(135deg, #28a745, #218838); /* Gradient background for success */
+    border-radius: 12px; /* More rounded corners */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25); /* Stronger shadow for depth */
+    opacity: 0; /* Hidden by default */
+    z-index: 1000;
+    animation: fade-in 1.5s ease forwards; /* Trigger fade-in effect */
+    transition: opacity 1.5s ease, transform 1.5s ease; /* For fade-out */
+}
+
+.toast.error {
+    background: linear-gradient(135deg, #dc3545, #c82333); /* Gradient for error */
+}
+
+.toast.fade-out {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px); /* Slide slightly upward */
+}
+
+/* Fade-in keyframe animation */
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px); /* Start slightly lower */
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0); /* End in the final position */
+    }
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Slide into view */
+}
+
+.toast.hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px); /* Slide slightly upward */
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth fade-out */
 }

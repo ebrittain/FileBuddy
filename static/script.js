@@ -31,6 +31,8 @@ function fetchDirectoryTree() {
 function displayTree(tree, container) {
     const ul = document.createElement('ul');
 
+    setupDragAndDrop();
+
     if (currentPath !== '') {
         const previousLi = document.createElement('li');
         previousLi.classList.add('previous');
@@ -170,6 +172,100 @@ function displaySearchResults(results) {
 
         searchResultsContainer.appendChild(resultItem);
     });
+}
+
+/**
+ * Handles drag-and-drop file uploads for the file tree.
+ */
+function setupDragAndDrop() {
+    const fileTree = document.getElementById("file-tree");
+    
+    const dropAreaMessage = document.createElement("div");
+    dropAreaMessage.id = "drop-area-message";
+    dropAreaMessage.textContent = "Drop files here to upload";
+    fileTree.appendChild(dropAreaMessage);
+
+    // Highlight the file tree and show the drop message when dragging files
+    fileTree.addEventListener("dragover", (event) => {
+        event.preventDefault(); // Allow drop
+        fileTree.classList.add("drag-over"); // Add visual highlight
+        dropAreaMessage.textContent = "Drop files here to upload"; // Set default message
+        dropAreaMessage.style.display = "block";
+    });
+
+    // Remove the highlight and hide the drop message when dragging stops
+    fileTree.addEventListener("dragleave", (event) => {
+        if (event.relatedTarget === null || !fileTree.contains(event.relatedTarget)) {
+            fileTree.classList.remove("drag-over");
+            dropAreaMessage.style.display = "none";
+        }
+    });
+
+    // Handle the dropped files
+    fileTree.addEventListener("drop", async (event) => {
+        event.preventDefault(); // Prevent default behavior
+        fileTree.classList.remove("drag-over");
+        dropAreaMessage.style.display = "none";
+
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            await uploadFiles(files);
+        }
+    });
+}
+
+/**
+ * Displays a toast message.
+ * @param {string} message - The text to display in the toast.
+ * @param {string} type - The type of message ('success' or 'error').
+ */
+function showToast(message, type = "success") {
+    const toast = document.getElementById("toast");
+
+    // Set the content and type
+    toast.textContent = message;
+    toast.className = `toast ${type} show`; // Add the type and show class
+    toast.style.display = "block";
+
+    // Automatically hide the toast after 3 seconds
+    clearTimeout(toast.hideTimeout); // Clear any existing timeout to prevent conflicts
+    toast.hideTimeout = setTimeout(() => {
+        toast.classList.add("hide");
+        setTimeout(() => {
+            toast.style.display = "none"; // Hide the element completely
+            toast.className = "toast"; // Reset class for future use
+        }, 500); // Ensure fade-out animation completes
+    }, 3000);
+}
+
+
+/**
+ * Uploads the provided files to the current path.
+ * @param {FileList} files - The files to upload.
+ */
+async function uploadFiles(files) {
+    const formData = new FormData();
+    formData.append("path", currentPath);
+
+    for (const file of files) {
+        formData.append("files", file);
+    }
+
+    try {
+        const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to upload files: ${response.statusText}`);
+        }
+        showToast("Files uploaded successfully!", "success");
+        fetchDirectoryTree(); // Refresh the file tree
+    } catch (error) {
+        console.error("Error uploading files:", error);
+        showToast("Failed to upload files. Please try again.", "error");
+    }
 }
 
 // Add search bar input handler

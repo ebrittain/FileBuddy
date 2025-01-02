@@ -127,6 +127,26 @@ def search_files():
     return jsonify(results)
 
 
+@app.route("/upload", methods=["POST"])
+def upload_files():
+    """Handle file uploads."""
+    path = request.form.get("path", "")
+    if not is_valid_path(path):
+        return jsonify({"error": "Invalid path"}), 400
+
+    full_path = os.path.join(args.base_dir, path)
+
+    if not os.path.exists(full_path) or not os.path.isdir(full_path):
+        return jsonify({"error": "Invalid path"}), 400
+
+    files = request.files.getlist("files")
+    for file in files:
+        file_path = os.path.join(full_path, file.filename)
+        file.save(file_path)
+
+    return jsonify({"success": True, "message": "Files uploaded successfully."})
+
+
 if __name__ == "__main__":
     if not os.path.exists(args.base_dir):
         raise FileExistsError(f'Unable to locate base directory: {args.base_dir}')
