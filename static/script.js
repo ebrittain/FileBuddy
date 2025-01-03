@@ -31,8 +31,6 @@ function fetchDirectoryTree() {
 function displayTree(tree, container) {
     const ul = document.createElement('ul');
 
-    setupDragAndDrop();
-
     if (currentPath !== '') {
         const previousLi = document.createElement('li');
         previousLi.classList.add('previous');
@@ -84,6 +82,11 @@ function displayTree(tree, container) {
         ul.appendChild(li);
     });
     container.appendChild(ul);
+
+    const dropAreaMessage = document.createElement("div");
+    dropAreaMessage.id = "drop-area-message";
+    dropAreaMessage.textContent = "Drop files here to upload";
+    container.appendChild(dropAreaMessage);
 }
 
 // Function to download a file with animation
@@ -175,44 +178,53 @@ function displaySearchResults(results) {
 }
 
 /**
- * Handles drag-and-drop file uploads for the file tree.
+ * Sets up drag-and-drop functionality once on window load using delegation.
  */
 function setupDragAndDrop() {
     const fileTree = document.getElementById("file-tree");
-    
-    const dropAreaMessage = document.createElement("div");
-    dropAreaMessage.id = "drop-area-message";
-    dropAreaMessage.textContent = "Drop files here to upload";
-    fileTree.appendChild(dropAreaMessage);
 
-    // Highlight the file tree and show the drop message when dragging files
-    fileTree.addEventListener("dragover", (event) => {
-        event.preventDefault(); // Allow drop
-        fileTree.classList.add("drag-over"); // Add visual highlight
-        dropAreaMessage.textContent = "Drop files here to upload"; // Set default message
-        dropAreaMessage.style.display = "block";
-    });
+    document.addEventListener("dragover", (event) => {
+        if (fileTree.contains(event.target)) {
+            event.preventDefault(); // Allow drop
+            fileTree.classList.add("drag-over");
 
-    // Remove the highlight and hide the drop message when dragging stops
-    fileTree.addEventListener("dragleave", (event) => {
-        if (event.relatedTarget === null || !fileTree.contains(event.relatedTarget)) {
-            fileTree.classList.remove("drag-over");
-            dropAreaMessage.style.display = "none";
+            const dropAreaMessage = fileTree.querySelector("#drop-area-message");
+            if (dropAreaMessage) {
+                dropAreaMessage.textContent = "Drop files here to upload";
+                dropAreaMessage.style.display = "block";
+            }
         }
     });
 
-    // Handle the dropped files
-    fileTree.addEventListener("drop", async (event) => {
-        event.preventDefault(); // Prevent default behavior
-        fileTree.classList.remove("drag-over");
-        dropAreaMessage.style.display = "none";
+    document.addEventListener("dragleave", (event) => {
+        if (!fileTree.contains(event.relatedTarget)) {
+            fileTree.classList.remove("drag-over");
 
-        const files = event.dataTransfer.files;
-        if (files.length > 0) {
-            await uploadFiles(files);
+            const dropAreaMessage = fileTree.querySelector("#drop-area-message");
+            if (dropAreaMessage) {
+                dropAreaMessage.style.display = "none";
+            }
+        }
+    });
+
+    document.addEventListener("drop", async (event) => {
+        if (fileTree.contains(event.target)) {
+            event.preventDefault();
+            fileTree.classList.remove("drag-over");
+
+            const dropAreaMessage = fileTree.querySelector("#drop-area-message");
+            if (dropAreaMessage) {
+                dropAreaMessage.style.display = "none";
+            }
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                await uploadFiles(files);
+            }
         }
     });
 }
+
 
 /**
  * Displays a toast message.
@@ -278,4 +290,5 @@ document.getElementById("search-bar").addEventListener("input", (event) => {
 // Initialize the directory tree when the page loads
 window.onload = function() {
     fetchDirectoryTree();
+    setupDragAndDrop();
 };
