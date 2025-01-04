@@ -235,3 +235,39 @@ li:hover {
     transform: translateX(-50%) translateY(-10px); /* Slide slightly upward */
     transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth fade-out */
 }
+
+/* Splash page container */
+.splash-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    background: linear-gradient(120deg, #98c3ff, #4b98e0);
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+/* Splash page description */
+.splash-container p {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+/* Enter button */
+#enter-button {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#enter-button:hover {
+    background-color: #218838;
+}
+

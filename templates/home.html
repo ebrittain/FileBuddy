@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to FileBuddy</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="splash-container">
+        <h1>Welcome to FileBuddy</h1>
+        <p>Your lightweight, self-hosted file management system.</p>
+        <p>Organize, upload, and manage your files securely and efficiently.</p>
+        <button id="enter-button">Enter FileBuddy</button>
+    </div>
+
+    <script>
+        // Navigate to /filebuddy when the button is clicked
+        document.getElementById("enter-button").addEventListener("click", () => {
+            window.location.href = "/filebuddy";
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, send_from_directory, jsonify, request, Response
+from flask import Flask, send_from_directory, render_template, jsonify, request, Response
 import argparse
 import io
 import zipfile
@@ -18,10 +18,14 @@ def is_valid_path(path):
     """Validate that the path does not contain invalid sequences like '..'."""
     return ".." not in path and not os.path.isabs(path)
 
-
 @app.route("/")
 def home():
-    return send_from_directory("static", "index.html")
+    return render_template("home.html")
+
+
+@app.route("/filebuddy")
+def filebuddy():
+    return render_template("filebuddy.html")
 
 
 @app.route("/files", methods=["GET"])
