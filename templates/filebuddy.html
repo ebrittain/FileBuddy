@@ -7,11 +7,25 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>FileBuddy</h1>
-    <div id="search-container">
-        <input type="text" id="search-bar" placeholder="Search files or directories...">
-        <div id="search-results"></div>
-    </div>
+    <header class="filebuddy-header">
+        <h1>FileBuddy</h1>
+        <div id="search-container">
+            <input type="text" id="search-bar" placeholder="Search files or directories...">
+            <div id="search-results"></div>
+        </div>
+        <div class="user-dropdown">
+            <button id="user-button" class="user-button">
+                {{username}}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="dropdown-icon" width="25" height="25">
+                    <path fill="currentColor" d="M7 10l5 5 5-5H7z" />
+                </svg>
+            </button>
+            <div id="user-dropdown-menu" class="dropdown-menu">
+                <a href="/logout" class="dropdown-item">Logout</a>
+            </div>
+        </div>
+    </header>
+    
     <div id="file-tree"></div>
     <div id="toast" class="toast" style="display: none;"></div>
     <script src="/static/script.js"></script>

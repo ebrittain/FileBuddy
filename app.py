@@ -1,31 +1,105 @@
 import os
-from flask import Flask, send_from_directory, render_template, jsonify, request, Response
+from flask import Flask, send_from_directory, render_template, jsonify, request, Response, redirect, url_for, request, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 import argparse
 import io
 import zipfile
 
-app = Flask(__name__, static_folder='static')
+from util import is_valid_path, get_secret_key
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--base-dir', type=str, required=True,
-                    help='Base directory to navigate from')
 parser.add_argument('--port', type=str, default=5000,
                     help='Base directory to navigate from')
 args = parser.parse_args()
 
+app = Flask(__name__)
+app.config['SECRET_KEY'] = get_secret_key()
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///filebuddy.db'
+app.config['USER_FILES_DIR'] = 'user_dirs'
 
-def is_valid_path(path):
-    """Validate that the path does not contain invalid sequences like '..'."""
-    return ".." not in path and not os.path.isabs(path)
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'home'
 
-@app.route("/")
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(150), nullable=False)
+    last_name = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    directory = db.Column(db.String(300), nullable=False)
+
+
+@app.route("/", methods=['GET', 'POST'])
 def home():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            flash('Logged in successfully!', 'success')
+            return redirect(url_for('filebuddy'))
+        else:
+            flash('Invalid username or password.', 'danger')
+
     return render_template("home.html")
 
 
 @app.route("/filebuddy")
+@login_required
 def filebuddy():
-    return render_template("filebuddy.html")
+    return render_template("filebuddy.html", username=current_user.username)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Register Route
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        user_directory = os.path.join(app.config['USER_FILES_DIR'], username)
+
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists.', 'danger')
+        elif User.query.filter_by(email=email).first():
+            flash("Email is already registered.", "danger")
+        else:
+            os.makedirs(user_directory, exist_ok=True)
+            new_user = User(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                username=username,
+                password=hashed_password,
+                directory=user_directory
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Account created successfully! You can now log in.', 'success')
+            return redirect(url_for('home'))
+
+    return render_template('register.html')
+
+# Logout Route
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out successfully.', 'success')
+    return redirect(url_for('home'))
 
 
 @app.route("/files", methods=["GET"])
@@ -35,7 +109,8 @@ def get_directory_tree():
     if not is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
-    full_path = os.path.join(args.base_dir, path) if path else args.base_dir
+    base_dir = current_user.directory
+    full_path = os.path.join(base_dir, path) if path else base_dir
 
     def get_tree(path):
         tree = []
@@ -47,7 +122,7 @@ def get_directory_tree():
                 entry = {
                     "name": entry,
                     "type": "file",
-                    "path": os.path.relpath(full_entry_path, args.base_dir).replace('\\', '/')
+                    "path": os.path.relpath(full_entry_path, base_dir).replace('\\', '/')
                 }
                 if os.path.isdir(full_entry_path):
                     entry['type'] = "directory"
@@ -66,7 +141,8 @@ def download_file(filename):
     if not is_valid_path(directory):
         return jsonify({"error": "Invalid path"}), 400
 
-    dir_path = os.path.join(args.base_dir, directory) if directory else args.base_dir
+    base_dir = current_user.directory
+    dir_path = os.path.join( base_dir, directory) if directory else base_dir
     return send_from_directory(dir_path, filename, as_attachment=True)
 
 
@@ -77,7 +153,8 @@ def download_directory_stream():
     if not is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
-    full_path = os.path.join(args.base_dir, path)
+    base_dir = current_user.directory
+    full_path = os.path.join(base_dir, path)
 
     if not os.path.exists(full_path) or not os.path.isdir(full_path):
         return jsonify({"error": "Directory does not exist"}), 404
@@ -106,7 +183,8 @@ def search_files():
     if not is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
-    full_path = os.path.join(args.base_dir, path)
+    base_dir = current_user.directory
+    full_path = os.path.join(base_dir, path)
 
     if not os.path.exists(full_path):
         return jsonify({"error": "Path does not exist"}), 404
@@ -138,7 +216,8 @@ def upload_files():
     if not is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
-    full_path = os.path.join(args.base_dir, path)
+    base_dir = current_user.directory
+    full_path = os.path.join(base_dir, path)
 
     if not os.path.exists(full_path) or not os.path.isdir(full_path):
         return jsonify({"error": "Invalid path"}), 400
@@ -152,6 +231,7 @@ def upload_files():
 
 
 if __name__ == "__main__":
-    if not os.path.exists(args.base_dir):
-        raise FileExistsError(f'Unable to locate base directory: {args.base_dir}')
+    with app.app_context():
+        db.create_all()
+    os.makedirs(app.config['USER_FILES_DIR'], exist_ok=True)
     app.run(host='0.0.0.0', port=args.port, debug=True)

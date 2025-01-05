@@ -280,6 +280,27 @@ async function uploadFiles(files) {
     }
 }
 
+function setupUserDropDown() {
+    const userButton = document.getElementById('user-button');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+
+    // Toggle dropdown menu visibility and button state
+    userButton.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent default button behavior
+        userDropdownMenu.classList.toggle('show');
+        userButton.classList.toggle('open'); // Add/remove the "open" class for rotation
+    });
+
+    // Close dropdown menu when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!document.querySelector('.user-dropdown').contains(event.target)) {
+            userDropdownMenu.classList.remove('show');
+            userButton.classList.remove('open'); // Reset rotation
+        }
+    });
+
+}
+
 // Add search bar input handler
 document.getElementById("search-bar").addEventListener("input", (event) => {
     const query = event.target.value;
@@ -289,6 +310,7 @@ document.getElementById("search-bar").addEventListener("input", (event) => {
 
 // Initialize the directory tree when the page loads
 window.onload = function() {
+    setupUserDropDown();
     fetchDirectoryTree();
     setupDragAndDrop();
 };

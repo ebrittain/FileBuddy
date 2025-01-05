@@ -11,14 +11,20 @@
         <h1>Welcome to FileBuddy</h1>
         <p>Your lightweight, self-hosted file management system.</p>
         <p>Organize, upload, and manage your files securely and efficiently.</p>
-        <button id="enter-button">Enter FileBuddy</button>
+        <div class="form-container">
+            <form method="POST" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="form-submit">Login</button>
+            </form>
+            <p class="form-footer">Don't have an account? <a href="/register">Register</a></p>
+        </div>
     </div>
-
-    <script>
-        // Navigate to /filebuddy when the button is clicked
-        document.getElementById("enter-button").addEventListener("click", () => {
-            window.location.href = "/filebuddy";
-        });
-    </script>
 </body>
 </html>

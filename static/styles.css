@@ -2,14 +2,14 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: linear-gradient(120deg, #98c3ff, #4b98e0);
+    background: linear-gradient(120deg, #b0d1ff, #65aff5);
     color: #333;
 }
 
 h1 {
     text-align: center;
     color: #fff;
-    font-size: 3.5em;
+    font-size: 2em;
     margin: 20px 0;
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
     font-weight: bold;
@@ -100,8 +100,9 @@ li:hover {
 /* Search bar styles */
 #search-container {
     position: relative;
-    margin: 20px auto;
-    max-width: 600px;
+    flex-grow: 1;
+    margin: 0 20px;
+    max-width: none;
 }
 
 #search-bar {
@@ -110,6 +111,7 @@ li:hover {
     font-size: 1em;
     border: 2px solid #007bff;
     border-radius: 8px;
+    box-sizing: border-box; /* Ensure padding and border are included in width */
 }
 
 #search-bar:focus {
@@ -133,7 +135,8 @@ li:hover {
 .search-result {
     padding: 10px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: #000; /* Set text color to black */
 }
 
 .search-result:hover {
@@ -144,7 +147,7 @@ li:hover {
 /* File tree styles */
 #file-tree {
     position: relative;
-    margin: 0 auto;
+    margin: 20px auto;
     max-width: 800px;
     width: 100%;
     border: 2px solid #007bff;
@@ -236,7 +239,7 @@ li:hover {
     transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth fade-out */
 }
 
-/* Splash page container */
+/* Splash container */
 .splash-container {
     display: flex;
     flex-direction: column;
@@ -249,14 +252,18 @@ li:hover {
     font-family: Arial, sans-serif;
 }
 
-/* Splash page description */
+.splash-container h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+}
+
 .splash-container p {
     font-size: 1.2em;
     margin: 10px 0;
 }
 
-/* Enter button */
-#enter-button {
+.button-container button {
+    margin: 10px;
     padding: 15px 30px;
     font-size: 1.2em;
     color: #fff;
@@ -267,7 +274,188 @@ li:hover {
     transition: background-color 0.3s ease;
 }
 
-#enter-button:hover {
+.button-container button:hover {
     background-color: #218838;
 }
 
+/* Form container styles */
+.form-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    border: 2px solid #007bff;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h1 {
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    color: #333333;
+    text-shadow: none;
+}
+
+/* Form group styles */
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Submit button */
+.form-submit {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2em;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-submit:hover {
+    background-color: #218838;
+}
+
+/* Form footer styles */
+.form-footer {
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.form-footer a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+.feedback {
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Header styles */
+.filebuddy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px 30px;
+    background-color: #627fff;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid #007bff;
+}
+
+/* User dropdown container */
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* User button */
+.user-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 2px; /* Increase spacing for larger icon */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.user-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Dropdown icon */
+.dropdown-icon {
+    fill: currentColor; /* Match the button's text color */
+    transition: transform 0.3s ease; /* Add rotation effect */
+}
+
+.user-button.open .dropdown-icon {
+    transform: rotate(180deg); /* Rotate icon when dropdown is open */
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px); /* Position below the button */
+    right: 0; /* Align to the right edge of the button */
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    z-index: 1000;
+    min-width: 200px;
+    visibility: hidden; /* Hidden by default */
+    opacity: 0; /* Transparent initially */
+    transform: translateY(-10px); /* Start slightly above */
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+
+/* Dropdown menu when visible */
+.dropdown-menu.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0); /* Slide into place */
+}
+
+/* Dropdown items */
+.dropdown-item {
+    padding: 12px 20px;
+    font-size: 1em;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f4f8;
+    color: #007bff;
+}
+
+/* Optional divider between items */
+.dropdown-item + .dropdown-item {
+    border-top: 1px solid #f0f0f0;
+}
