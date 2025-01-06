@@ -1,5 +1,6 @@
 import os
-import os
+import sys
+
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 
@@ -7,6 +8,7 @@ load_dotenv()
 
 # Path to the .env file
 ENV_FILE = ".env"
+IS_WIN = sys.platform.startswith('win')
 
 
 def is_valid_path(path):
@@ -30,3 +32,10 @@ def get_secret_key():
 
     print("A new secret key has been generated and added to .env.")
     return secret_key
+
+
+def rmdir(path):
+    if IS_WIN:
+        os.system(f'rmdir /S /Q "{path}"')
+    else:
+        os.system(f'rm -rf "{path}"')

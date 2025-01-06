@@ -65,20 +65,13 @@ function displayTree(tree, container) {
                     fetchDirectoryTree();
                 }, 300);
             });
-
-            // Double Click: Download Directory
-            li.addEventListener('dblclick', () => {
-                clearTimeout(clickTimeout);
-                downloadDirectory(li, item.path);
-            });
         } else {
             li.classList.add('file');
             icon.textContent = '📄';
             li.appendChild(icon);
             li.appendChild(document.createTextNode(item.name));
-            li.onclick = () => downloadFile(item.name, li);
         }
-
+        li.setAttribute("name", item.name);
         ul.appendChild(li);
     });
     container.appendChild(ul);
@@ -110,7 +103,7 @@ function downloadFile(filename, li = null) {
     }
 }
 
-function downloadDirectory(li, path) {
+function downloadDirectory(path, li) {
     const link = document.createElement('a');
     link.href = `/download-directory?path=${path}`;
     link.download = `${path.split('/').pop()}.zip`;
@@ -126,6 +119,27 @@ function downloadDirectory(li, path) {
     setTimeout(() => {
         li.removeChild(animation);
     }, 2500);
+}
+
+
+function deleteFileTreeItem(name) {
+    if (confirm('Are you sure you want to delete this item?')) {
+        fetch(`/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: name, directory: currentPath }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    showToast('Item deleted successfully');
+                    fetchDirectoryTree();
+                } else {
+                    console.log(data.error)
+                    showToast('Failed to delete the item', 'error');
+                }
+            });
+    }
 }
 
 /**
@@ -301,6 +315,50 @@ function setupUserDropDown() {
 
 }
 
+function setupContextMenu() {
+    const fileTree = document.getElementById('file-tree');
+    const contextMenu = document.getElementById('context-menu');
+    let selectedItem = null;
+
+    // Show context menu on right-click
+    fileTree.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        // Check if a file or folder was clicked
+        if (event.target.tagName === 'LI' && event.target.className !== 'previous') {
+            selectedItem = event.target;
+
+            // Position the context menu near the cursor
+            contextMenu.style.top = `${event.clientY}px`;
+            contextMenu.style.left = `${event.clientX}px`;
+            contextMenu.style.display = 'block';
+        }
+    });
+
+    // Hide context menu when clicking elsewhere
+    document.addEventListener('click', () => {
+        contextMenu.style.display = 'none';
+    });
+
+    // Handle context menu options
+    document.getElementById('download-option').addEventListener('click', () => {
+        if (selectedItem) {
+            const filePath = selectedItem.getAttribute('name');
+            if (selectedItem.className === 'file') {
+                downloadFile(filePath, selectedItem)
+            } else {
+                downloadDirectory(filePath, selectedItem)
+            }
+        }
+    });
+
+    document.getElementById('delete-option').addEventListener('click', () => {
+        if (selectedItem) {
+            const filePath = selectedItem.getAttribute('name');
+            deleteFileTreeItem(filePath);
+        }
+    });
+}
+
 // Add search bar input handler
 document.getElementById("search-bar").addEventListener("input", (event) => {
     const query = event.target.value;
@@ -310,6 +368,7 @@ document.getElementById("search-bar").addEventListener("input", (event) => {
 
 // Initialize the directory tree when the page loads
 window.onload = function() {
+    setupContextMenu();
     setupUserDropDown();
     fetchDirectoryTree();
     setupDragAndDrop();

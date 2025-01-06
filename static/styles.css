@@ -459,3 +459,36 @@ li:hover {
 .dropdown-item + .dropdown-item {
     border-top: 1px solid #f0f0f0;
 }
+
+/* Context menu styles */
+#context-menu {
+    position: absolute;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+    display: none;
+}
+
+#context-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#context-menu button:hover {
+    background-color: #f0f4f8;
+    color: #007bff;
+}
+
+.hidden {
+    display: none;
+}

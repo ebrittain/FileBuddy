@@ -1,13 +1,16 @@
 import os
+import argparse
+import io
+import zipfile
+import shutil
+from datetime import datetime, timezone
+
 from flask import Flask, send_from_directory, render_template, jsonify, request, Response, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
-import argparse
-import io
-import zipfile
 
-from util import is_valid_path, get_secret_key
+import util
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--port', type=str, default=5000,
@@ -15,7 +18,7 @@ parser.add_argument('--port', type=str, default=5000,
 args = parser.parse_args()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = get_secret_key()
+app.config['SECRET_KEY'] = util.get_secret_key()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///filebuddy.db'
 app.config['USER_FILES_DIR'] = 'user_dirs'
 
@@ -32,16 +35,22 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     directory = db.Column(db.String(300), nullable=False)
+    last_login = db.Column(db.DateTime, nullable=True)
 
 
 @app.route("/", methods=['GET', 'POST'])
 def home():
+    if current_user.is_authenticated:
+        return redirect(url_for('filebuddy'))
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
 
         if user and bcrypt.check_password_hash(user.password, password):
+            user.last_login = datetime.now(timezone.utc)
+            db.session.commit()
             login_user(user)
             flash('Logged in successfully!', 'success')
             return redirect(url_for('filebuddy'))
@@ -106,7 +115,7 @@ def logout():
 def get_directory_tree():
     """Get the directory tree"""
     path = request.args.get('path', '')
-    if not is_valid_path(path):
+    if not util.is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
     base_dir = current_user.directory
@@ -134,11 +143,36 @@ def get_directory_tree():
     return jsonify(get_tree(full_path))
 
 
+@app.route('/delete', methods=['POST'])
+@login_required
+def delete():
+    data = request.get_json()
+    directory = data.get('directory')
+    filename = data.get('filename')
+    rel_path = os.path.join(directory, filename)
+    if not util.is_valid_path(rel_path):
+        return jsonify({"error": "Invalid path"}), 400
+
+    base_dir = current_user.directory
+    full_path = os.path.join(base_dir, rel_path)
+
+    if os.path.exists(full_path):
+        try:
+            if os.path.isfile(full_path):
+                os.remove(full_path)
+            else:
+                util.rmdir(full_path)
+            return jsonify({'success': True})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    return jsonify({'error': 'File or folder not found'}), 404
+
+
 @app.route("/download/<path:filename>", methods=["GET"])
 def download_file(filename):
     """Download a specific file"""
     directory = request.args.get('directory', '')
-    if not is_valid_path(directory):
+    if not util.is_valid_path(directory):
         return jsonify({"error": "Invalid path"}), 400
 
     base_dir = current_user.directory
@@ -150,7 +184,7 @@ def download_file(filename):
 def download_directory_stream():
     """Stream the entire directory as a .zip file."""
     path = request.args.get("path", "")
-    if not is_valid_path(path):
+    if not util.is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
     base_dir = current_user.directory
@@ -180,7 +214,7 @@ def search_files():
     """Recursively search for files and directories matching the query."""
     query = request.args.get("query", "").lower()
     path = request.args.get("path", "")
-    if not is_valid_path(path):
+    if not util.is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
     base_dir = current_user.directory
@@ -213,7 +247,7 @@ def search_files():
 def upload_files():
     """Handle file uploads."""
     path = request.form.get("path", "")
-    if not is_valid_path(path):
+    if not util.is_valid_path(path):
         return jsonify({"error": "Invalid path"}), 400
 
     base_dir = current_user.directory
